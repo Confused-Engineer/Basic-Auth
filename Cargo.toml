@@ -7,4 +7,5 @@ authors = ["Confused Engineer"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rust-ini = "0.19"
+rust-ini = "0.21.0"
+rand = "0.8.5"

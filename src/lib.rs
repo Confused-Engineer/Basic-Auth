@@ -40,8 +40,8 @@ impl Config {
                 tokens.push(value.to_string());
             }
         }
-        println!("{section}");
-        println!("{:?}", tokens);
+        //println!("{section}");
+        //println!("{:?}", tokens);
         
         return tokens;
     }

@@ -1,8 +1,6 @@
-use std::io::Error;
+use std::io::{Error, Write};
 use ini::Ini;
 use rand::{distributions::Alphanumeric, Rng};
-
-
 
 
 pub struct Config {
@@ -15,7 +13,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            auth: Ini::load_from_file("auth").unwrap(),
+            auth: Config::load_auth(),
             
             admin_tokens: Config::load_config_tokens("admins"),
             user_tokens: Config::load_config_tokens("users"),
@@ -27,11 +25,33 @@ impl Default for Config {
 }
 
 impl Config {
+
+    fn load_auth() -> Ini
+    {
+        
+        let file = "auth";
+        use std::fs::File;
+        let auth = Ini::load_from_file(file);
+        if auth.is_err()
+        {
+            let auth_file = File::create(file);
+            let _ = auth_file.unwrap().write_all(b"
+[users]
+            
+[admins]
+admin1=SsHo36hfS6MBF364dAEsZuy9TpplHkHtaTeJ1nC9bVnJyE0q4NDzE8HlcmFQyL9t
+");
+        }
+
+        Ini::load_from_file(file).unwrap()
+    }
+
+
     fn load_config_tokens(section: &str) -> Vec<String>
     {
         let mut tokens: Vec<String> = Vec::new();
         
-        let binding = Ini::load_from_file("auth").unwrap();
+        let binding = Config::load_auth();
         let auth = binding.section(Some(section)).unwrap();
         for (_key, value) in auth.iter(){
             if !value.is_empty()
@@ -113,7 +133,7 @@ impl Config {
                 {
                     return Ok(format!("{user} updated: {new_token}"));
                 } else {
-                    return Err(Error::new(std::io::ErrorKind::NotFound, update_user_error + "Error Adding User"));
+                    return Err(Error::new(std::io::ErrorKind::NotFound, update_user_error + "Error Saving User to File"));
                 }
                 
             }
@@ -179,9 +199,6 @@ impl Config {
         return false;
     }
 }
-
-
-
 
 
 

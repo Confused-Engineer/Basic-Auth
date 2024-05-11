@@ -4,6 +4,7 @@ use rand::{distributions::Alphanumeric, Rng};
 
 
 pub struct Config {
+    file_location: String,
     auth: Ini,
     admin_tokens: Vec<String>,
     user_tokens: Vec<String>,
@@ -13,6 +14,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
+            file_location: "auth".to_string(),
             auth: Config::load_auth(),
             
             admin_tokens: Config::load_config_tokens("admins"),
@@ -90,7 +92,7 @@ admin1=SsHo36hfS6MBF364dAEsZuy9TpplHkHtaTeJ1nC9bVnJyE0q4NDzE8HlcmFQyL9t
                     .collect();
 
                 self.auth.with_section(Some("users")).set(&user, &new_token);
-                let user_add = self.auth.write_to_file("auth");
+                let user_add = self.auth.write_to_file(&self.file_location);
                 if user_add.is_ok()
                 {
                     return Ok(format!("{user} created: {new_token}"));
@@ -128,7 +130,7 @@ admin1=SsHo36hfS6MBF364dAEsZuy9TpplHkHtaTeJ1nC9bVnJyE0q4NDzE8HlcmFQyL9t
                     .collect();
 
                 self.auth.with_section(Some("users")).set(&user, &new_token);
-                let user_add = self.auth.write_to_file("auth");
+                let user_add = self.auth.write_to_file(&self.file_location);
                 if user_add.is_ok()
                 {
                     return Ok(format!("{user} updated: {new_token}"));
@@ -162,7 +164,7 @@ admin1=SsHo36hfS6MBF364dAEsZuy9TpplHkHtaTeJ1nC9bVnJyE0q4NDzE8HlcmFQyL9t
 
 
                 self.auth.with_section(Some("users")).delete(&user);
-                let user_remove = self.auth.write_to_file("auth");
+                let user_remove = self.auth.write_to_file(&self.file_location);
                 if user_remove.is_ok()
                 {
                     return Ok(format!("{user} deleted"));
@@ -197,6 +199,31 @@ admin1=SsHo36hfS6MBF364dAEsZuy9TpplHkHtaTeJ1nC9bVnJyE0q4NDzE8HlcmFQyL9t
         }
 
         return false;
+    }
+
+    pub fn list_user(&mut self, admin_token: String) -> Result<String, Error>
+    {
+        let list_user_error = "List User Error: ".to_string();
+        let mut user_list = String::new();
+
+        for token in &self.admin_tokens
+        {
+            if token == &admin_token
+            {
+
+                let binding = self.auth.section(Some("users"));
+                for (key, _) in binding.unwrap()
+                {
+                    user_list = user_list.clone() + ", " + key;
+                }
+
+                return Ok(format!("Users: {}", user_list));
+
+                
+            }
+        }
+        
+        return Err(Error::new(std::io::ErrorKind::NotFound, list_user_error + "Admin Token Invalid"));
     }
 }
 
